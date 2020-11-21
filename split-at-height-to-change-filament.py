@@ -44,7 +44,7 @@ M300 ; Beep
 """)
 
 def gen_prepare_to_continue_print():
-  global initial_ext_temp, bed_temp, e, z
+  global initial_ext_temp, bed_temp, e, x, y, z
 
   if not initial_ext_temp:
     raise Exception("initial_ext_temp not set")
@@ -72,7 +72,7 @@ G92 E0
 G1 F2400 E-2
 
 G0 Z{z+1} F6000 ; Move to Z position higher than next layer
-G0 X110 Y113.601 F6000 ; Move to next layer position
+G0 X{x} Y{y} F6000 ; Move to next layer position
 G0 Z{z} F6000 ; Move to next layer Z position
 
 G92 E{e} ; Set the extrude value to the previous value
@@ -148,6 +148,10 @@ for line in input.readlines():
     fan_switch[layer_idx] = m.group(1)
   elif G01_RE.match(line):
     move = gparseMove(line)
+    if move.get('X'):
+      x = Decimal(move.get('X'))
+    if move.get('Y'):
+      y = Decimal(move.get('Y'))
     if move.get('Z'):
       z = Decimal(move['Z'])
       if not split_found and z >= split_z:

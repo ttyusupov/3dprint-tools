@@ -3,18 +3,13 @@
 import argparse
 import re
 from decimal import *
+from gcode_common import *
 
-LAYER_START_RE = re.compile(";LAYER:(\d+)")
-G01_RE = re.compile("G[01]\s+(.*)")
-SET_EXT_TEMP_RE = re.compile("M104\s+S(\d+)")
-SET_BED_TEMP_RE = re.compile("M140\s+S(\d+)")
+BUILD_MAX_X = 220
+BUILD_MAX_Y = 220
+BUILD_MAX_Z = 250
+
 SET_FAN_LEVEL_RE = re.compile("M106\s+S(\d+)")
-
-def gparseMove(line):
-  result = {}
-  for g in line.split(" "):
-    result[g[0]] = g[1:]
-  return result
 
 def switch_output():
   global output
@@ -36,7 +31,7 @@ M107
 M104 S0 ; Turn off extruder heat
 M140 S0 ; Turn off bed heat
 G1 X10.000000 Y10.000000 F3000 ; Move head away
-G1 Z{max(z+1, 50)} F3000 ; Move head up to at least z=5, but higher than it was
+G1 Z{max(z+1, 50)} F3000 ; Move head up to at least z=50, but higher than it was
 G0 E-100 F2400 ; Turn out filament
 M400 ; Wait for buffer to clear
 M84 ; Disable motors
@@ -58,14 +53,14 @@ M190 S{bed_temp}
 M109 S{initial_ext_temp}
 
 M82 ;absolute extrusion mode
-G28 ; home all axes
+
+G0 F6000 X0 Y{BUILD_MAX_Y} Z{max(z+1, 50)} ; move closer to start-line
  M117 Purge extruder
  G92 E0 ; reset extruder
- G1 Z1.0 F3000 ; move z up little to prevent scratching of surface
- G1 X2 Y20 Z0.3 F5000.0 ; move to start-line position
- G1 X2 Y200.0 Z0.3 F1500.0 E15 ; draw 1st line
- G1 X2 Y200.0 Z0.4 F5000.0 ; move to side a little
- G1 X2 Y20 Z0.4 F1500.0 E30 ; draw 2nd line
+ G1 X20 Y{BUILD_MAX_Y} Z0.3 F5000.0 ; move to start-line position
+ G1 X200.0 Y{BUILD_MAX_Y} Z0.3 F1500.0 E15 ; draw 1st line
+ G1 X200.0 Y{BUILD_MAX_Y} Z0.4 F5000.0 ; move to side a little
+ G1 X20 Y{BUILD_MAX_Y} Z0.4 F1500.0 E30 ; draw 2nd line
  G92 E0 ; reset extruder
  G1 Z1.0 F3000 ; move z up little to prevent scratching of surface
 G92 E0

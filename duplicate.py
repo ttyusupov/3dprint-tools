@@ -5,8 +5,8 @@ import re
 from decimal import *
 from gcode_common import *
 
-BUILD_MAX_Y = 220
 BUILD_MAX_X = 220
+BUILD_MAX_Y = 220
 BUILD_MAX_Z = 250
 
 def gen_start_item(initial_ext_temp, initial_bed_temp, start_z, idx):
